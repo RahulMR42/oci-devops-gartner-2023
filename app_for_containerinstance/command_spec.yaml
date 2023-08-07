@@ -7,8 +7,8 @@ env:
   variables:
 
   vaultVariables:
-    aws_access_key_id: ocid1.vaultsecret.oc1.iad.amaaaaaayat6pyaacyoqnl7dik67wrpjmbzsgwl3h5jj32t4ps7bpllhyu4a
-    aws_secret_access_key: ocid1.vaultsecret.oc1.iad.amaaaaaayat6pyaaggjqsp66t6z37qhhnjfldkss3qalfnmhz23gt453rbfa
+    aws_access_key_id: ocid1.vaultsecret.oc1.iad.amaaaaaayat6pyaaggjqsp66t6z37qhhnjfldkss3qalfnmhz23gt453rbfa
+    aws_secret_access_key: ocid1.vaultsecret.oc1.iad.amaaaaaayat6pyaacyoqnl7dik67wrpjmbzsgwl3h5jj32t4ps7bpllhyu4a
 
 steps:
   - type: Command

@@ -46,7 +46,7 @@ steps:
       cat variables.tf | envsubst >variables.tf_tmp
       cp variables.tf_tmp variables.tf
       cat remote-backend_template.tf| envsubst > remote-backend_template.tf_tmp
-      cp remote-backend_template.tf_tmp remote-backend_template.tf
+      cat remote-backend_template.tf_tmp|tr -d "[:blank:]"> remote-backend_template.tf
       rm remote-backend_template.tf_tmp
       rm variables.tf_tmp
       oci os object bulk-upload -ns ${NAMESPACE_NAME} -bn ${BUCKET_NAME} --src-dir ${OCI_PRIMARY_SOURCE_DIR}/app_for_containerinstance/terraform --overwrite --region ${REGION} --content-type auto --prefix devops_

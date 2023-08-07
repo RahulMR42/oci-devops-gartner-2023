@@ -41,6 +41,17 @@ steps:
       export OBJECT_BUCKET_NAME=${BUCKET_NAME}
       export OBJECT_NAMESPACE=${NAMESPACE_NAME}
 
+  - type: VulnerabilityAudit
+    name: "Vulnerability Audit for Maven Package"
+    configuration:
+      buildType: maven
+      pomFilePath: ${OCI_PRIMARY_SOURCE_DIR}/app_for_computeinstance/pom.xml
+      maxPermissibleCvssV2Score: 6.0
+      maxPermissibleCvssV3Score: 7.0
+    knowledgeBaseId: ${KB_OCID}
+    vulnerabilityAuditCompartmentId: ${VA_COMPARTMENT_OCID}
+    vulnerabilityAuditName: build_sample_${OCI_PRIMARY_SOURCE_SOURCE_BRANCH_NAME}
+
   - type: Command
     name: "Install GraalVM 22.x Native Image for Java17"
     command: |

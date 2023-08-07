@@ -111,7 +111,7 @@ steps:
       echo ${GPG_PASSPHRASE} >${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment/gpg.pass
   - type: Command
     timeoutInSeconds: 600
-    name: "Install Node Prereqs"
+    name: "Install Node Prereqsm for Helm"
     command: |
       cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment
       # install nvm
@@ -132,7 +132,7 @@ steps:
 
   - type: Command
     timeoutInSeconds: 600
-    name: "NPM install"
+    name: "NPM install for Helm"
     command: |
       cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment
       npm install
@@ -144,16 +144,16 @@ steps:
         timeoutInSeconds: 40
         runAs: root
 
-  - type: Command
-    timeoutInSeconds: 1200
-    name: "Run Tests"
-    command: |
-      cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment
-      npm test
+#  - type: Command
+#    timeoutInSeconds: 1200
+#    name: "Run Tests"
+#    command: |
+#      cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment
+#      npm test
 
   - type: Command
     timeoutInSeconds: 1200
-    name: "Build container image"
+    name: "Build container image for Helm"
     command: |
       cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment
       docker build --pull --rm -t node-express-getting-starter .

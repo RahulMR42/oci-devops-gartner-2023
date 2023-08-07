@@ -50,7 +50,7 @@ variable "c1_iaage_url" {
 }
 
 variable "c1_image_static_tag" {
-        default = "${IMAGE_STATIC_TAG}"
+        default = "${CONTAINERINSTANCE_STATIC_IMAGE_TAG}"
 }
 
 variable "c1_is_resource_principal_disabled" {

@@ -13,7 +13,7 @@ env:
     GPG_PASSPHRASE: ocid1.vaultsecret.ocX.yyy.zzzz
 
   exportedVariables:
-    - BUILDRUN_HASH
+    - BUILDRUN_HASH_HELM
 
 steps:
   - type: Command
@@ -21,8 +21,8 @@ steps:
     timeoutInSeconds: 400
     command: |
       cd ${OCI_PRIMARY_SOURCE_DIR}
-      export BUILDRUN_HASH=`echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7`
-      echo "BUILDRUN_HASH: " $BUILDRUN_HASH
+      export BUILDRUN_HASH_HELM=`echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7`
+      echo "BUILDRUN_HASH_HELM: " BUILDRUN_HASH_HELM
       oci artifacts generic artifact download --artifact-id ${GPG_ARTIFACT_OCID} --file ${OCI_PRIMARY_SOURCE_DIR}/private_decoded
       echo ${GPG_PASSPHRASE} >${OCI_PRIMARY_SOURCE_DIR}/gpg.pass
   - type: Command

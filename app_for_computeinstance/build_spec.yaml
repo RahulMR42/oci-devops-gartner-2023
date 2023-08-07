@@ -49,7 +49,7 @@ steps:
     command: |
       cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_computeinstance
       chmod 777 ./mvnw
-      ./mvnw wrapper:wrapper
+      ./mvn wrapper:wrapper
       ./mvnw --no-transfer-progress package -Dpackaging=native-image
   - type: Command
     name: "Build a container image with Graal Native executable"

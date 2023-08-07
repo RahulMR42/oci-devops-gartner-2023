@@ -41,7 +41,7 @@ steps:
       terraform version
       mv *_remote-backend_template.tf remote-backend_template.tf
       terraform init -migrate-state -upgrade
-      echo "Attempting to apply with version ${BUILDRUN_HASH} ..."
+      echo "Attempting to apply with version ${BUILDRUN_HASH_CI} ..."
       terraform apply --auto-approve
       ci_host_ocid=`terraform output container_instance_id`
       echo "Restarting container instance ${ci_host_ocid}"

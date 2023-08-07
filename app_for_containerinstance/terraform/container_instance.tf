@@ -31,7 +31,6 @@ resource "oci_container_instances_container_instance" "test_container_instance" 
     subnet_id              = var.subnet_id
   }
 }
-
 data  "oci_core_vnic" "vnic_0_info" {
   #Required
   vnic_id = oci_container_instances_container_instance.test_container_instance.vnics[0].vnic_id

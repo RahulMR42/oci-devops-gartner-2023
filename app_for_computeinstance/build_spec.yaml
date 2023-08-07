@@ -5,18 +5,23 @@ runAs: root
 shell: bash
 env:
   exportedVariables:
-    - BUILDRUN_HASH
+    - BUILDRUN_HASH_INSTANCE
+    - BUILDRUN_HASH_CI
+    - STATIC_IMAGE_TAG
+    - OBJECT_BUCKET_NAME
+    - OBJECT_NAMESPACE
+
   variables:
     "JAVA_HOME" : "/usr/lib64/graalvm/graalvm22-ee-java17"
     # PATH is a reserved variable and cannot be defined as a variable.
     # However, PATH can be changed in a build step and the change is visible in subsequent steps.
 steps:
   - type: Command
-    name: "Define unique  tag"
+    name: "Define unique  tag for Instance"
     timeoutInSeconds: 40
     command: |
-      export BUILDRUN_HASH=`echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7`
-      echo "BUILDRUN_HASH: " $BUILDRUN_HASH
+      export BUILDRUN_HASH_INSTANCE=`echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7`
+      echo "BUILDRUN_HASH_INSTANCE: " BUILDRUN_HASH_INSTANCE
 
   - type: Command
     name: "Install GraalVM 22.x Native Image for Java17"

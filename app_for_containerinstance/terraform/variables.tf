@@ -39,7 +39,7 @@ variable "c1_display_name" {
 
 variable "c1_environment_variables" {
   default = {
-    "version" = "${BUILDRUN_HASH}"
+    "version" = "${BUILDRUN_HASH_CI}"
     "instance_name"        = "${CONTAINERINSTANCE_DISPLAY_NAME}"
 
   }

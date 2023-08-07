@@ -1,26 +1,30 @@
 version: 0.1
 component: build
-timeoutInSeconds: 6000
+timeoutInSeconds: 600
 runAs: root
 shell: bash
 env:
-  # these are local variables to the build config
-  variables:
-  # the value of a vaultVariable is the secret-id (in OCI ID format) stored in the OCI Vault service
-  # you can then access the value of that secret in your build_spec.yaml commands
-  vaultVariables:
-  #  EXAMPLE_SECRET: "YOUR-SECRET-OCID"
-  # exportedVariables are made available to use as parameters in sucessor Build Pipeline stages
-  # For this Build to run, the Build Pipeline needs to have a BUILDRUN_HASH parameter set
   exportedVariables:
+    - BUILDRUN_HASH_INSTANCE
     - BUILDRUN_HASH_CI
     - STATIC_IMAGE_TAG
     - OBJECT_BUCKET_NAME
     - OBJECT_NAMESPACE
 
+  variables:
+    "JAVA_HOME" : "/usr/lib64/graalvm/graalvm22-ee-java17"
+    # PATH is a reserved variable and cannot be defined as a variable.
+    # However, PATH can be changed in a build step and the change is visible in subsequent steps.
 steps:
   - type: Command
-    name: "Define unique image tag"
+    name: "Define unique  tag for Instance"
+    timeoutInSeconds: 40
+    command: |
+      export BUILDRUN_HASH_INSTANCE=`echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7`
+      echo "BUILDRUN_HASH_INSTANCE: " BUILDRUN_HASH_INSTANCE
+
+  - type: Command
+    name: "Define unique image tag for Container Instance"
     timeoutInSeconds: 40
     command: |
       export BUILDRUN_HASH_CI=`echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7`
@@ -30,8 +34,26 @@ steps:
       export OBJECT_NAMESPACE=${NAMESPACE_NAME}
 
   - type: Command
+    name: "Install GraalVM 22.x Native Image for Java17"
+    command: |
+      yum -y install graalvm22-ee-17-native-image
+  - type: Command
+    name: "Set PATH Variable"
+    command: |
+      export PATH=$JAVA_HOME/bin:$PATH
+  # - type: Command
+  #   name: "Build a Jar"
+  #   command: |
+  #     mvn --no-transfer-progress clean package
+  - type: Command
+    name: "Build a native executable Graal Binary"
+    command: |
+      cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_computeinstance
+      mvn --no-transfer-progress -Pnative -DskipTests package
+
+  - type: Command
     timeoutInSeconds: 1200
-    name: "Build container image"
+    name: "Build container image for CI"
     command: |
       cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_containerinstance
       cd python_app
@@ -39,7 +61,7 @@ steps:
 
   - type: Command
     timeoutInSeconds: 6000
-    name: "Upload Terraform config"
+    name: "Upload Terraform config for CI"
     command: |
       cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_containerinstance
       cd terraform
@@ -50,7 +72,7 @@ steps:
       rm remote-backend_template.tf_tmp
       rm variables.tf_tmp
       oci os object bulk-upload -ns ${NAMESPACE_NAME} -bn ${BUCKET_NAME} --src-dir ${OCI_PRIMARY_SOURCE_DIR}/app_for_containerinstance/terraform --overwrite --region ${REGION} --content-type auto --prefix devops_
-     
+
     onFailure:
       - type: Command
         command: |
@@ -61,6 +83,13 @@ steps:
 
 
 outputArtifacts:
+  # - name: app_jar
+  #   type: BINARY
+  #   location: target/my-app-1.0-SNAPSHOT.jar
+  - name: app_native_executable
+    type: BINARY
+    location: ${OCI_PRIMARY_SOURCE_DIR}/app_for_computeinstance/target/my-app
+
   - name: python_app_dockerimage
     type: DOCKER_IMAGE
     location: python_fast_app:latest

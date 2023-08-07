@@ -51,13 +51,13 @@ steps:
       chmod 777 ./mvnw
       mvn wrapper:wrapper
       ./mvnw --no-transfer-progress package -Dpackaging=native-image
-  - type: Command
-    name: "Build a container image with Graal Native executable"
-    command: |
-      ${OCI_PRIMARY_SOURCE_DIR}/app_for_computeinstance
-      docker build -f ./Dockerfile \
-                  --build-arg APP_FILE=${APP_FILE} \
-                  -t ${TAG} .
+#  - type: Command
+#    name: "Build a container image with Graal Native executable"
+#    command: |
+#      ${OCI_PRIMARY_SOURCE_DIR}/app_for_computeinstance
+#      docker build -f ./Dockerfile \
+#                  --build-arg APP_FILE=${APP_FILE} \
+#                  -t ${TAG} .
 outputArtifacts:
   - name: app_native_executable
     type: BINARY

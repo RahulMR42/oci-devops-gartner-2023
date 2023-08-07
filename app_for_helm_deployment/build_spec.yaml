@@ -8,9 +8,9 @@ env:
   variables:
     NVM_VERSION: "v0.39.0"
   vaultVariables:
-    HELM_REPO_USER: ocid1.vaultsecret.ocX.yyyy.zzzz
-    USER_AUTH_TOKEN: ocid1.vaultsecret.ocX.yyyy.zzzz
-    GPG_PASSPHRASE: ocid1.vaultsecret.ocX.yyy.zzzz
+    HELM_REPO_USER: ocid1.vaultsecret.oc1.iad.amaaaaaayat6pyaazejjxqtauh3z7yn7nljmphwc6p5puqsik36ktadxvfmq
+    USER_AUTH_TOKEN: ocid1.vaultsecret.oc1.iad.amaaaaaayat6pyaakbhuf2xhboondo3sw6ila7ztqrljdtobo2hvb4wkxx7q
+    GPG_PASSPHRASE: ocid1.vaultsecret.oc1.iad.amaaaaaayat6pyaay6ql4zbnnivmcrobzdhwfrloc3rfuumfiy23mwfzaaxa
 
   exportedVariables:
     - BUILDRUN_HASH_HELM

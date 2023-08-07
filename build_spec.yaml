@@ -179,9 +179,6 @@ steps:
       helm push *.tgz oci://${HELM_REGISTRY}/${HELM_REGISTRY_NAMESPACE}/${HELM_CHART_REPO}
 
 outputArtifacts:
-  # - name: app_jar
-  #   type: BINARY
-  #   location: target/my-app-1.0-SNAPSHOT.jar
   - name: app_native_executable
     type: BINARY
     location: ${OCI_PRIMARY_SOURCE_DIR}/app_for_computeinstance/target/my-app

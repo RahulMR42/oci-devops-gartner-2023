@@ -7,14 +7,22 @@ env:
   exportedVariables:
     - BUILDRUN_HASH_INSTANCE
     - BUILDRUN_HASH_CI
+    - BUILDRUN_HASH_HELM
     - STATIC_IMAGE_TAG
     - OBJECT_BUCKET_NAME
     - OBJECT_NAMESPACE
 
   variables:
     "JAVA_HOME" : "/usr/lib64/graalvm/graalvm22-ee-java17"
+    NVM_VERSION: "v0.39.0"
     # PATH is a reserved variable and cannot be defined as a variable.
     # However, PATH can be changed in a build step and the change is visible in subsequent steps.
+
+  vaultVariables:
+    HELM_REPO_USER: ocid1.vaultsecret.oc1.iad.amaaaaaayat6pyaazejjxqtauh3z7yn7nljmphwc6p5puqsik36ktadxvfmq
+    USER_AUTH_TOKEN: ocid1.vaultsecret.oc1.iad.amaaaaaayat6pyaakbhuf2xhboondo3sw6ila7ztqrljdtobo2hvb4wkxx7q
+    GPG_PASSPHRASE: ocid1.vaultsecret.oc1.iad.amaaaaaayat6pyaay6ql4zbnnivmcrobzdhwfrloc3rfuumfiy23mwfzaaxa
+
 steps:
   - type: Command
     name: "Define unique  tag for Instance"
@@ -81,6 +89,83 @@ steps:
         timeoutInSeconds: 40
         runAs: root
 
+  - type: Command
+    name: "Setup the Environment For Helm"
+    timeoutInSeconds: 400
+    command: |
+      cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment
+      export BUILDRUN_HASH_HELM=`echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7`
+      echo "BUILDRUN_HASH_HELM: " $BUILDRUN_HASH_HELM
+      oci artifacts generic artifact download --artifact-id ${GPG_ARTIFACT_OCID} --file ${OCI_PRIMARY_SOURCE_DIR}/private_decoded
+      echo ${GPG_PASSPHRASE} >${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment/gpg.pass
+  - type: Command
+    timeoutInSeconds: 600
+    name: "Install Node Prereqs"
+    command: |
+      cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment
+      # install nvm
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERION}/install.sh | bash
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+      nvm install lts/erbium
+      echo "NODE VERSION: $(node -v)"
+      echo "NPM VERSION: $(npm -v)"
+
+    onFailure:
+      - type: Command
+        command: |
+          echo "Handling Failure"
+          echo "Failure successfully handled"
+        timeoutInSeconds: 40
+        runAs: root
+
+  - type: Command
+    timeoutInSeconds: 600
+    name: "NPM install"
+    command: |
+      cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment
+      npm install
+    onFailure:
+      - type: Command
+        command: |
+          echo "Handling Failure"
+          echo "Failure successfully handled"
+        timeoutInSeconds: 40
+        runAs: root
+
+  - type: Command
+    timeoutInSeconds: 1200
+    name: "Run Tests"
+    command: |
+      cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment
+      npm test
+
+  - type: Command
+    timeoutInSeconds: 1200
+    name: "Build container image"
+    command: |
+      cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment
+      docker build --pull --rm -t node-express-getting-starter .
+
+  - type: Command
+    timeoutInSeconds: 1200
+    name: "Helm Package & Push"
+    command: |
+      cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment/helm/node-service
+      export BUILDRUN_HASH_HELM=${BUILDRUN_HASH_HELM}
+      originalChartfile="Chart.yaml"
+      tmpChartfile=$(mktemp)
+      cp --attributes-only --preserve $originalChartfile $tmpChartfile
+      cat $originalChartfile | envsubst > $tmpChartfile && mv $tmpChartfile $originalChartfile
+      originalValuesfile="values.yaml"
+      tmpValuesfile=$(mktemp)
+      cp --attributes-only --preserve $originalValuesfile $tmpValuesfile
+      cat $originalValuesfile | envsubst > $tmpValuesfile && mv $tmpValuesfile $originalValuesfile 
+      cat $originalValuesfile
+      helm package --sign --key ${HELM_SIGN_KEY} --keyring ${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment/private_decoded --passphrase-file ${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment/gpg.pass .
+      rm -f ${OCI_PRIMARY_SOURCE_DIR}/app_for_helm_deployment/gpg.pass
+      helm registry login ${HELM_REGISTRY} -u ${HELM_REPO_USER} -p ${USER_AUTH_TOKEN}
+      helm push *.tgz oci://${HELM_REGISTRY}/${HELM_REGISTRY_NAMESPACE}/${HELM_CHART_REPO}
 
 outputArtifacts:
   # - name: app_jar
@@ -97,3 +182,9 @@ outputArtifacts:
   - name: command_spec
     type: BINARY
     location: ${OCI_PRIMARY_SOURCE_DIR}/app_for_containerinstance/command_spec.yaml
+
+  - name: helm_application_docker_image
+    type: DOCKER_IMAGE
+    # this location tag doesn't effect the tag used to deliver the container image
+    # to the Container Registry
+    location: node-express-getting-starter:latest

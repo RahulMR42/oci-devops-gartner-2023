@@ -63,3 +63,7 @@ outputArtifacts:
     type: BINARY
     location: ${OCI_PRIMARY_SOURCE_DIR}/app_for_computeinstance/target/MnHelloRest
 
+  - name: instance_deployment_spec
+    type: BINARY
+    location: ${OCI_PRIMARY_SOURCE_DIR}/app_for_computeinstance/instance_deployment.yaml
+

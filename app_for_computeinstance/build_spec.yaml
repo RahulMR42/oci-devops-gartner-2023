@@ -23,7 +23,7 @@ steps:
     command: |
       echo "OCI_BUILD_RUN_ID: ${OCI_BUILD_RUN_ID}"
       export BUILDRUN_HASH_INSTANCE=`echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7`
-      echo "BUILDRUN_HASH_INSTANCE: " BUILDRUN_HASH_INSTANCE
+      echo "BUILDRUN_HASH_INSTANCE: " $BUILDRUN_HASH_INSTANCE
 
   - type: VulnerabilityAudit
     name: "Vulnerability Audit for Maven Package"
@@ -48,6 +48,7 @@ steps:
     name: "Build a native executable"
     command: |
       cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_computeinstance
+      chmod 777 ./mvnw
       ./mvnw --no-transfer-progress package -Dpackaging=native-image
   - type: Command
     name: "Build a container image with Graal Native executable"

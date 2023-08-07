@@ -9,7 +9,7 @@ resource "oci_container_instances_container_instance" "test_container_instance" 
   graceful_shutdown_timeout_in_seconds = var.graceful_shutdown_timeout_in_seconds
   shape                                = var.shape
   containers {
-    additional_capabilities        = var.c1_additional_capabilities
+    # additional_capabilities        = var.c1_additional_capabilities
     arguments                      = var.c1_arguments
     command                        = var.c1_command
     defined_tags                   = {}

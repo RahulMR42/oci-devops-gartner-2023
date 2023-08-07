@@ -1,24 +1,30 @@
 version: 0.1
 component: build
-timeoutInSeconds: 600
+timeoutInSeconds: 900
 runAs: root
 shell: bash
 env:
-  exportedVariables:
-    - BUILDRUN_HASH_INSTANCE
-
-
   variables:
     "JAVA_HOME" : "/usr/lib64/graalvm/graalvm22-ee-java17"
     # PATH is a reserved variable and cannot be defined as a variable.
     # However, PATH can be changed in a build step and the change is visible in subsequent steps.
+    TAG: "mn-hello-ni:0.0.1"
+    APP_FILE: "MnHelloRest"
+
+  # exportedVariables are made available to use as parameters in sucessor Build Pipeline stages
+  # For this Build to run, the Build Pipeline needs to have a BUILDRUN_HASH parameter set
+  exportedVariables:
+    - BUILDRUN_HASH_INSTANCE
+
 steps:
   - type: Command
-    name: "Define unique  tag for Instance"
-    timeoutInSeconds: 40
+    name: "Define unique image tag"
+    timeoutInSeconds: 140
     command: |
+      echo "OCI_BUILD_RUN_ID: ${OCI_BUILD_RUN_ID}"
       export BUILDRUN_HASH_INSTANCE=`echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7`
       echo "BUILDRUN_HASH_INSTANCE: " BUILDRUN_HASH_INSTANCE
+
   - type: VulnerabilityAudit
     name: "Vulnerability Audit for Maven Package"
     configuration:
@@ -35,23 +41,23 @@ steps:
     command: |
       yum -y install graalvm22-ee-17-native-image
   - type: Command
-    name: "Set PATH Variable"
+    name: "Set PATH Variable."
     command: |
       export PATH=$JAVA_HOME/bin:$PATH
-  # - type: Command
-  #   name: "Build a Jar"
-  #   command: |
-  #     mvn --no-transfer-progress clean package
   - type: Command
-    name: "Build a native executable "
+    name: "Build a native executable"
     command: |
       cd ${OCI_PRIMARY_SOURCE_DIR}/app_for_computeinstance
-      mvn --no-transfer-progress -Pnative -DskipTests package
-
+      ./mvnw --no-transfer-progress package -Dpackaging=native-image
+  - type: Command
+    name: "Build a container image with Graal Native executable"
+    command: |
+      ${OCI_PRIMARY_SOURCE_DIR}/app_for_computeinstance
+      docker build -f ./Dockerfile \
+                  --build-arg APP_FILE=${APP_FILE} \
+                  -t ${TAG} .
 outputArtifacts:
-  # - name: app_jar
-  #   type: BINARY
-  #   location: target/my-app-1.0-SNAPSHOT.jar
   - name: app_native_executable
     type: BINARY
-    location: ${OCI_PRIMARY_SOURCE_DIR}/app_for_computeinstance/target/my-app
+    location: ${OCI_PRIMARY_SOURCE_DIR}/app_for_computeinstance/target/MnHelloRest
+

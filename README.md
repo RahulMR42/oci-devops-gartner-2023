@@ -1,5 +1,12 @@
 ## OCI Devops Demo for Gartner -2023
+
+#### Logical flow
+
 ![](images/devops-oci.png)
+
+#### OCI Resources view
+
+![](images/Devops_Gartner_2023.jpg)
 
 #### Build Parmeters
 
